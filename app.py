@@ -19,8 +19,7 @@ def createConnection(user_name, database_name, user_password, host, port):
 @app.route('/', methods=['GET'])
 def get_sensor_data():
     # Create a connection to the database
-    cnx, cursor = createConnection(
-            'sql10651035', 'sql10651035', 'tkQyMRXggg', 'sql10.freemysqlhosting.net', '3306')
+    cnx, cursor = createConnection('sql3660249', 'sql3660249', 'ltCwqsdPFi', 'sql3.freemysqlhosting.net', '3306')
 
     # Query the database
     query = ("SELECT * FROM dht_sensor_data")
@@ -68,15 +67,14 @@ def receive_sensor_data():
 
         humidity = data.get('humidity')
         temperature = data.get('temperature')
-        date_time = data.get('date_time')
-        ESP_name = data.get('ESP_name')
+        smoke = data.get('smoke') # "0.0"
+        date_time = data.get('date_time') # "2021-08-08 12:00:00"
 
-        cnx, cursor = createConnection(
-            'sql10651035', 'sql10651035', 'tkQyMRXggg', 'sql10.freemysqlhosting.net', '3306')
+        cnx, cursor = createConnection('sql3660249', 'sql3660249', 'ltCwqsdPFi', 'sql3.freemysqlhosting.net', '3306')
 
-        add_data = (
-            "INSERT INTO dht_sensor_data (humidity, temperature, date_time, ESP_name) VALUES (%s, %s, %s, %s)")
-        cursor.execute(add_data, (humidity, temperature, date_time, ESP_name))
+        add_data = ("INSERT INTO dht_sensor_data (float(humidity), float(temperature), float(smoke), date_time) VALUES (%f, %f, %f, %s)")
+        
+        cursor.execute(add_data, (humidity, temperature, smoke, date_time))
         cnx.commit()
         cursor.close()
         cnx.close()
