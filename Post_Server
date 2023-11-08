@@ -14,7 +14,7 @@ const char* password = "";
 // const char* password = "rubenraya";
 
 // Replace with your API endpoint
-const char* apiEndpoint = "https://potential-space-acorn-rxw6wp7grwqfxxwq-5000.app.github.dev/sensor_data";
+const char* apiEndpoint = "https://congenial-system-w4x5xgv7gxq39xp9-5000.app.github.dev/sensor_data";
 
 // Function to connect to Wi-Fi using the provided credentials
 void setupWifi() 
