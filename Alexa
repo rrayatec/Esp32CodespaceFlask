@@ -1,0 +1,159 @@
+#include <WiFi.h>
+#include <Espalexa.h>
+#include "twilio.hpp"
+
+// define_leds
+#define LED 2
+
+// prototypes
+boolean connectWifi();
+
+//callback functions
+void firstLightChanged(uint8_t brightness);
+
+const char* ssid = "Tec-Contingencia";
+const char* password = "";
+
+WiFiServer server(8000);
+
+boolean wifiConnected = false;
+
+Espalexa espalexa;
+
+void setup()
+{
+  Serial.begin(115200);
+  // Initialise wifi connection
+  wifiConnected = connectWifi();
+  pinMode(LED, OUTPUT);
+
+  if (wifiConnected) {
+    espalexa.addDevice("Luz NDS", firstLightChanged); //simplest definition, default state off
+    espalexa.begin();
+
+  } else
+  {
+    while (1) {
+      Serial.println("Cannot connect to WiFi. Please check data and reset the ESP.");
+      delay(2500);
+    }
+  }
+}
+
+void loop()
+{
+  espalexa.loop();
+  delay(1);
+
+  WiFiClient client = server.available();
+  // wait for a client (web browser) to connect
+  if (client)
+  {
+    Serial.println("\n[Client connected]");
+    while (client.connected())
+    {
+      // read line by line what the client (web browser) is requesting
+      if (client.available())
+      {
+        String line = client.readStringUntil('\r');
+        Serial.print(line);
+        // wait for end of client's request, that is marked with an empty line
+        if (line.length() == 1 && line[0] == '\n')
+        {
+          client.println(prepareHtmlPage());
+          break;
+        }
+      }
+    }
+
+    while (client.available()) {
+      // but first, let client finish its request
+      // that's diplomatic compliance to protocols
+      // (and otherwise some clients may complain, like curl)
+      // (that is an example, prefer using a proper webserver library)
+      client.read();
+    }
+
+    // close the connection:
+    client.stop();
+    Serial.println("[Client disconnected]");
+  }
+}
+
+//our callback functions
+void firstLightChanged(uint8_t brightness) {
+  Serial.print("Device 1 changed to ");
+  digitalWrite(LED, HIGH);
+
+  //EXAMPLE
+  if (brightness) {
+    Serial.print("ON, brightness ");
+    Serial.println(brightness);
+  }
+  else  {
+    Serial.println("OFF");
+    digitalWrite(LED, LOW);
+  }
+}
+
+// connect to wifi – returns true if successful or false if not
+boolean connectWifi() {
+  boolean state = true;
+  int i = 0;
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.println("");
+  Serial.println("Connecting to WiFi");
+
+  // Wait for connection
+  Serial.print("Connecting...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+    if (i > 20) {
+      state = false; break;
+    }
+    i++;
+  }
+  Serial.println("");
+  if (state) {
+    Serial.print("Connected to ");
+    Serial.println(ssid);
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
+    server.begin();
+  }
+  else {
+    Serial.println("Connection failed.");
+  }
+  return state;
+}
+
+
+
+String prepareHtmlPage()
+{
+  String htmlPage;
+  String _button = "<img src='https://www.todo-argentina.net/cursos/javascript/imagenes/pic_bulboff.gif' style='width:100px'>";
+  if (digitalRead(LED) == 1) {
+    _button = "<img src='https://www.todo-argentina.net/cursos/javascript/imagenes/pic_bulbon.gif' style='width:100px'>";
+  }
+  htmlPage.reserve(1024);               // prevent ram fragmentation
+  htmlPage = F("HTTP/1.1 200 OK\r\n"
+               "Content-Type: text/html\r\n"
+               "Connection: close\r\n"  // the connection will be closed after completion of the response
+               "Refresh: 1\r\n"         // refresh the page automatically every 5 sec
+               "\r\n"
+               "<!DOCTYPE HTML>"
+               "<html style='font-family: Helvetica;  display: inline-block;  margin: 10px auto;  text-align: center;'>"
+               "<head>  <meta name='viewport' content='width=device-width, initial-scale=1'>"
+               "</head>"
+               "<h1 style='color: #0F3376;padding: 2vh;'>Luz NDS</h1>"
+
+              );
+  htmlPage += _button ;
+  htmlPage += F("</html>"
+                "\r\n");
+  return htmlPage;
+}
