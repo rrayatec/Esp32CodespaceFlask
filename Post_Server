@@ -56,8 +56,8 @@ void sendData(float temperature, float humidity)
   StaticJsonDocument<200> doc;
 
   // Add the data to the JSON document
-  doc["temperature"] = "0.1";
-  doc["humidity"] = "0.2";
+  doc["temperature"] = temperature;
+  doc["humidity"] = humidity;
 
   // Add the current date and time to the JSON document. This will change to a date from the proper sensor in the future
   doc["date_time"] = "2021-01-01 00:00:00";
@@ -87,7 +87,7 @@ void sendData(float temperature, float humidity)
 void loop() 
 {
   // Read the temperature and humidity from the DHT sensor
-  // TempAndHumidity  data = dhtSensor.getTempAndHumidity();
+  TempAndHumidity  data = dhtSensor.getTempAndHumidity();
 
   // Print the temperature and humidity to the serial monitor
   // Serial.println("Temp: " + String(data.temperature, 2) + "°C");
@@ -95,8 +95,8 @@ void loop()
   // Serial.println("---");
 
   // Send the data to the API endpoint
-  // sendData(data.temperature, data.humidity);
-  sendData(1.0, 1.2);
+  sendData(data.temperature, data.humidity);
+
 
   delay(5000);
 }
