@@ -1,7 +1,6 @@
 CREATE DATABASE  IF NOT EXISTS `iot_2023`;
 USE `iot_2023`;
 
-
 DROP TABLE IF EXISTS `dht_sensor_data`;
 
 CREATE TABLE `dht_sensor_data` (
