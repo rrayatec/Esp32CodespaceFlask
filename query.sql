@@ -7,6 +7,6 @@ CREATE TABLE `dht_sensor_data` (
   `id` int NOT NULL AUTO_INCREMENT,
   `humidity` float DEFAULT NULL,
   `temperature` float DEFAULT NULL,
-  `date_time` varchar(50) DEFAULT NULL,
+  `date_time` VARCHAR(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3;
