@@ -67,14 +67,13 @@ def receive_sensor_data():
 
         humidity = data.get('humidity')
         temperature = data.get('temperature')
-        smoke = data.get('smoke') # "0.0"
         date_time = data.get('date_time') # "2021-08-08 12:00:00"
 
         cnx, cursor = createConnection('sql3660249', 'sql3660249', 'ltCwqsdPFi', 'sql3.freemysqlhosting.net', '3306')
 
-        add_data = ("INSERT INTO dht_sensor_data (float(humidity), float(temperature), float(smoke), date_time) VALUES (%f, %f, %f, %s)")
+        add_data = ("INSERT INTO dht_sensor_data (humidity, temperature, date_time) VALUES (%f, %f, %s)")
         
-        cursor.execute(add_data, (humidity, temperature, smoke, date_time))
+        cursor.execute(add_data, (humidity, temperature, date_time))
         cnx.commit()
         cursor.close()
         cnx.close()
