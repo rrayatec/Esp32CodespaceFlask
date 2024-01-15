@@ -1,0 +1,85 @@
+//Incluimos las librerias
+#include <WiFi.h>
+#include <HTTPClient.h> 
+#include <ArduinoJson.h>  
+#include "DHTesp.h"
+
+const char* apiEndpoint = "https://sturdy-space-memory-4r6v6wq769qfgp6-5000.app.github.dev/sensor_data";
+const char* ssid = "Wokwi-GUEST"; 
+const char* password = "";
+//Decaramos el variable que almacena el pin a conectar el DHT11
+int pinDHT = 15;
+//Instanciamos el DHT
+DHTesp dht;
+
+void setupWifi() 
+{
+  Serial.begin(9600);
+  Serial.print("Connecting to WiFi");
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(100);
+    Serial.print(".");
+  }
+  Serial.print(" Connected: ");
+  Serial.println(WiFi.localIP());
+}
+
+void setup() {
+  Serial.begin(115200);
+  //Inicializamos el dht
+  dht.setup(pinDHT, DHTesp::DHT22);
+  setupWifi();
+}
+
+void sendData(float temperature, float humidity) 
+{
+  Serial.print("Sending data to API: ");
+
+  // Set up HTTP connection with the API endpoint
+  HTTPClient http;
+  http.begin(apiEndpoint);
+  http.addHeader("Content-Type", "application/json");
+
+  // Create a JSON document using the ArduinoJson library
+  StaticJsonDocument<200> doc;
+
+  // Add the data to the JSON document
+  doc["temperature"] = temperature;
+  doc["humidity"] = humidity;
+
+  // Add the current date and time to the JSON document. This will change to a date from the proper sensor in the future
+  doc["date_time"] = "2021-01-01 00:00:00";
+
+  // Serialize the JSON document to a string
+  String json;
+  serializeJson(doc, json);
+
+  // Send the POST request to the API endpoint
+  int httpResponseCode = http.POST(json);
+  if (httpResponseCode > 0) 
+  {
+    // Print the response from the server
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
+    String responseString = http.getString();
+    Serial.println("Received response: " + responseString);
+  } else 
+  {
+    // Print the error code
+    Serial.print("Error code: ");
+    Serial.println(httpResponseCode);
+  }
+  http.end();
+}
+
+void loop() {
+  //Obtenemos el arreglo de datos (humedad y temperatura)
+  TempAndHumidity data = dht.getTempAndHumidity();
+  //Mostramos los datos de la temperatura y humedad
+  Serial.println("Temperatura: " + String(data.temperature, 2) + "°C");
+  Serial.println("Humedad: " + String(data.humidity, 1) + "%");
+  Serial.println("---");
+  delay(1000);
+  sendData(data.temperature, data.humidity);
+}
