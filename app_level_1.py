@@ -2,8 +2,8 @@ from flask import Flask, render_template, request
 from twilio.rest import Client
 import mysql.connector
 
-account_sid = 'AC61639100b7374e9a727b8eeaf3282533'
-auth_token = 'bf54a37c7f3ad886379508e2c7a3af0d'
+account_sid = '__AC61__639100b___7374e9__a727b8eeaf32__82533'
+auth_token = 'bf54a37c7__f3ad886379__508e2c7a__3af0d'
 client = Client(account_sid, auth_token)
 
 app = Flask(__name__)
@@ -30,7 +30,7 @@ def receive_sensor_data():
         print(temperature)
         print(date_time)
         # DB name, User name, password, host,  port
-        cnx, cursor = createConnection('sql3678867', 'sql3678867', 'JlYRKX9QNL', 'sql3.freemysqlhosting.net', '3306')
+        cnx, cursor = createConnection('sql36___78867', 'sql36___78867___', 'JlY___RKX9QNL', 'sql3.freemys___qlhosting.net', '3306')
 
         add_data = ("INSERT INTO dht_sensor_data (humidity, temperature, date_time) VALUES ("+temperature+","+humidity+",'"+date_time+"')")
         
