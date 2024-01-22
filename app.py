@@ -73,7 +73,7 @@ def receive_sensor_data():
 
         add_data = ("INSERT INTO dht_sensor_data (humidity, temperature, date_time) VALUES ("+temperature+","+humidity+",'"+date_time+"')")
         
-        cursor.execute(add_data, (humidity, temperature, date_time))
+        cursor.execute(add_data)
         cnx.commit()
         cursor.close()
         cnx.close()
