@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 
-account_sid = 'AC61639100b7374e9a727b8eeaf3282533'
-auth_token = 'bf54a37c7f3ad886379508e2c7a3af0d'
+account_sid = ''
+auth_token = ''
 client = Client(account_sid, auth_token)
 
 app = Flask(__name__)
