@@ -1,13 +1,15 @@
-from flask import Flask, request, render_template, jsonify
-from datetime import date, datetime, timedelta
+from flask import Flask, render_template, request
+from twilio.rest import Client
 import mysql.connector
-from flask import Flask, render_template
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 
-app = Flask(__name__)
+account_sid = 'AC61639100b7374e9a727b8eeaf3282533'
+auth_token = 'bf54a37c7f3ad886379508e2c7a3af0d'
+client = Client(account_sid, auth_token)
 
+app = Flask(__name__)
 
 def createConnection(user_name, database_name, user_password, host, port):
     cnx = mysql.connector.connect(
@@ -15,11 +17,53 @@ def createConnection(user_name, database_name, user_password, host, port):
     cursor = cnx.cursor()
     return (cnx, cursor)
 
+# solamente recibimos datos del emulador virtual
+@app.route('/sensor_data', methods=['POST'])
+def receive_sensor_data():
 
-@app.route('/', methods=['GET'])
-def get_sensor_data():
-    # Create a connection to the database
-    cnx, cursor = createConnection('sql3660249', 'sql3660249', 'ltCwqsdPFi', 'sql3.freemysqlhosting.net', '3306')
+    if request.headers['Content-Type'] == 'application/json':
+
+        data = request.json
+
+        humidity = str(data.get('humidity'))
+        temperature = str(data.get('temperature'))
+        date_time = data.get('date_time')
+
+        print(humidity)
+        print(temperature)
+        print(date_time)
+        # DB name, User name, password, host,  port
+        cnx, cursor = createConnection('sql3678867', 'sql3678867', 'JlYRKX9QNL', 'sql3.freemysqlhosting.net', '3306')
+
+        add_data = ("INSERT INTO dht_sensor_data (humidity, temperature, date_time) VALUES ("+temperature+","+humidity+",'"+date_time+"')")
+        
+        cursor.execute(add_data)
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+    
+        message = client.messages.create(
+        from_='whatsapp:+14155238886',
+        body='Humedad: '+humidity+" temperatura:"+temperature,
+        to='whatsapp:+5215514200581'
+        )
+        print(message.sid)
+
+        return 'Data received successfully.', 200
+    else:
+        return 'Invalid content type. Expected application/json.', 0
+
+# solamente mostramos la Pagina Web
+@app.route("/" , methods=['GET'])
+def hello_world():
+    message = client.messages.create(
+    from_='whatsapp:+14155238886',
+    body='Servicio activado ',
+    to='whatsapp:+5215514200581'
+    )
+    print(message.sid)
+        # Create a connection to the database
+    cnx, cursor = createConnection('sql3678867', 'sql3678867', 'JlYRKX9QNL', 'sql3.freemysqlhosting.net', '3306')
 
     # Query the database
     query = ("SELECT * FROM dht_sensor_data")
@@ -54,30 +98,7 @@ def get_sensor_data():
     img_data = base64.b64encode(img.getvalue()).decode()
 
     # Renderizar la plantilla HTML con la gráfica
-    return render_template('index.html', img_data=img_data)
+    return render_template('graph.html', img_data=img_data)
 
     # Return the data
     # return , 200
-
-
-@app.route('/sensor_data', methods=['POST'])
-def receive_sensor_data():
-    if request.headers['Content-Type'] == 'application/json':
-        data = request.json
-
-        humidity = data.get('humidity')
-        temperature = data.get('temperature')
-        date_time = data.get('date_time') # "2021-08-08 12:00:00"
-
-        cnx, cursor = createConnection('sql3660249', 'sql3660249', 'ltCwqsdPFi', 'sql3.freemysqlhosting.net', '3306')
-
-        add_data = ("INSERT INTO dht_sensor_data (humidity, temperature, date_time) VALUES ("+temperature+","+humidity+",'"+date_time+"')")
-        
-        cursor.execute(add_data)
-        cnx.commit()
-        cursor.close()
-        cnx.close()
-
-        return 'Data received successfully.', 200
-    else:
-        return 'Invalid content type. Expected application/json.', 400
