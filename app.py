@@ -71,7 +71,7 @@ def receive_sensor_data():
 
         cnx, cursor = createConnection('sql3660249', 'sql3660249', 'ltCwqsdPFi', 'sql3.freemysqlhosting.net', '3306')
 
-        add_data = ("INSERT INTO dht_sensor_data (humidity, temperature, date_time) VALUES (%f, %f, %s)")
+        add_data = ("INSERT INTO dht_sensor_data (humidity, temperature, date_time) VALUES ("+temperature+","+humidity+",'"+date_time+"')")
         
         cursor.execute(add_data, (humidity, temperature, date_time))
         cnx.commit()
